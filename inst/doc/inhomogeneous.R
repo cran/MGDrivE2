@@ -422,7 +422,7 @@ events <- rbind(events_f,events_m)
 
 ## -----------------------------------------------------------------------------
 # ODE (inhomogeneous) simulation
-ODE_out_inhom <- sim_trajectory_R(x0 = initialCons$M0, t0 = 0, tt = tmax, dt = dt,
+ODE_out_inhom <- sim_trajectory_R(x0 = initialCons$M0, tmax = tmax, dt = dt,
                                   S = S, hazards = approx_hazards, sampler = "ode",
                                   method = "ode45", events = events, verbose = FALSE)
 
@@ -436,7 +436,7 @@ ODE_out_inhom_melt <- rbind(cbind(ODE_female_inhom, "sex" = "F"),
 
 
 # ODE (homogeneous) simulation
-ODE_out_hom <- sim_trajectory_R(x0 = initialCons$M0, t0 = 0, tt = tmax, dt = dt,
+ODE_out_hom <- sim_trajectory_R(x0 = initialCons$M0, tmax = tmax, dt = dt,
                                 S = S, hazards = approx_hazards_hom, sampler = "ode",
                                 method = "ode45", events = events, verbose = FALSE)
 
@@ -471,7 +471,7 @@ ggplot(data = rbind(ODE_out_inhom_melt, ODE_out_hom_melt) ) +
 #  dt_stoch <- 1/24
 #  
 #  # run inhomogeneous simulations
-#  PTS_out_inhom <- sim_trajectory_R(x0 = initialCons$M0, t0 = 0, tt = tmax, dt = dt,
+#  PTS_out_inhom <- sim_trajectory_R(x0 = initialCons$M0, tmax = tmax, dt = dt,
 #                                    dt_stoch = dt_stoch, S = S, num_reps = num_rep,
 #                                    hazards = exact_hazards, sampler = "tau",
 #                                    events = events, verbose = FALSE)
@@ -523,7 +523,7 @@ ggplot(data = rbind(ODE_out_inhom_melt, ODE_out_hom_melt) ) +
 #  # run homogeneous simulations
 #  PTS_hom_par <- parallel::clusterApplyLB(cl=cl, x=1:num_rep, fun=function(x){
 #    # run trajectory
-#    PTS_out_hom <- sim_trajectory_R(x0 = M0, t0 = 0, tt = tmax, dt = dt,
+#    PTS_out_hom <- sim_trajectory_R(x0 = M0, tmax = tmax, dt = dt,
 #                                    dt_stoch = dt_stoch, S = S, hazards = exact_hazards_hom,
 #                                    sampler = "tau",events = events, verbose = FALSE)
 #  

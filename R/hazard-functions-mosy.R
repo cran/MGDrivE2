@@ -181,7 +181,7 @@ make_larvae_mort_haz_log <- function(trans,u,l_ix,node,cube,params,exact = TRUE,
 
   # rate constants
   muL <- params$muL
-  K <- params$K[node]
+  K <- params$K[[node]]
 
   # which places have input arcs to this transition
   s <- trans$s
@@ -233,7 +233,7 @@ make_larvae_mort_haz_lk <- function(trans,u,l_ix,node,cube,params,exact = TRUE,t
 
   # rate constants
   muL <- params$muL
-  gamma <- params$gamma[node]
+  gamma <- params$gamma[[node]]
 
   # which places have input arcs to this transition
   s <- trans$s

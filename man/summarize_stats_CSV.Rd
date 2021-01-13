@@ -10,8 +10,7 @@ summarize_stats_CSV(
   mean = TRUE,
   quantiles = NULL,
   spn_P,
-  t0,
-  tt,
+  tmax,
   dt,
   rem_file = FALSE,
   verbose = TRUE
@@ -28,9 +27,7 @@ summarize_stats_CSV(
 
 \item{spn_P}{Places object, see details}
 
-\item{t0}{Initial time to begin simulation}
-
-\item{tt}{The final time to end simulation}
+\item{tmax}{The final time to end simulation}
 
 \item{dt}{The time-step at which to return output (\strong{not} the time-step of the sampling algorithm)}
 

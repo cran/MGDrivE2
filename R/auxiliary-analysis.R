@@ -71,7 +71,7 @@
 #' \code{\link{spn_P_epiSIS_node}}, \code{\link{spn_P_epiSIS_network}},
 #' \code{\link{spn_P_epiSEIR_node}}, or \code{\link{spn_P_epiSEIR_network}}.
 #'
-#' \code{t0}, \code{tt}, \code{dt} define the first sampling time, the last sampling
+#' \code{tmax}, \code{dt} define the last sampling
 #' time, and each sampling time in-between.
 #'
 #' For more details about using this function to process CSV output see:
@@ -81,8 +81,7 @@
 #' @param write_dir Directory to write output to. Default is read_dir
 #' @param stage Life stage to print, see details
 #' @param spn_P Places object, see details
-#' @param t0 Initial time to begin simulation
-#' @param tt The final time to end simulation
+#' @param tmax The final time to end simulation
 #' @param dt The time-step at which to return output (\strong{not} the time-step of the sampling algorithm)
 #' @param erlang Boolean, default is FALSE, to return summaries by genotype
 #' @param sum_fem if \code{TRUE}, in addition to FS, FE, FI output by node and repetition, output an
@@ -100,7 +99,7 @@ split_aggregate_CSV <- function(
   read_dir,
   write_dir = read_dir,
   stage = c("E","L","P","M","U","FS","FE","FI","H"),
-  spn_P, t0, tt, dt,
+  spn_P, tmax, dt,
   erlang = FALSE,
   sum_fem = FALSE,
   rem_file=FALSE,
@@ -111,9 +110,11 @@ split_aggregate_CSV <- function(
   # Checks
   ##########
   # required parameters
-  if(any(c(missing(read_dir),missing(spn_P),missing(t0),missing(tt),missing(dt)))){
-    stop("Please provide 'read_dir', 'spn_P', 't0', 'tt', and 'dt'.")
+  if(any(c(missing(read_dir),missing(spn_P),missing(tmax),missing(dt)))){
+    stop("Please provide 'read_dir', 'spn_P', 'tmax', and 'dt'.")
   }
+  t0 <- 0
+  tt <- tmax
 
   # check read_dir
   if(!dir.exists(read_dir)){
@@ -672,7 +673,7 @@ base_erlang_F <- function(fileList,outList,nGenos,nErlang,times,nTimes,nNodes){
 # Sum all Adult Females (S,E,I) -> F
 #######################################
 
-#' Base Summary of Erlang Stages for Adult Females
+#' Base Summary of Infection (SEI) Stages for Adult Females
 #'
 #' This function takes ALL of the adult female stages and summarized them by
 #' Erlang-distributed latent infection, writing output to provided folders.
@@ -807,8 +808,7 @@ base_sum_F <- function(fileList,outList,genos,nGenos,nErlang,times,nTimes,nNodes
 #' @param mean Boolean, calculate mean or not. Default is TRUE
 #' @param quantiles Vector of quantiles to calculate. Default is NULL
 #' @param spn_P Places object, see details
-#' @param t0 Initial time to begin simulation
-#' @param tt The final time to end simulation
+#' @param tmax The final time to end simulation
 #' @param dt The time-step at which to return output (\strong{not} the time-step of the sampling algorithm)
 #' @param rem_file Remove original output? Default is FALSE
 #' @param verbose Chatty? Default is TRUE
@@ -816,16 +816,20 @@ base_sum_F <- function(fileList,outList,genos,nGenos,nErlang,times,nTimes,nNodes
 #' @return Writes output to files in write_dir
 #'
 #' @export
-summarize_stats_CSV <- function(read_dir, write_dir=read_dir, mean=TRUE, quantiles=NULL,
-                                spn_P, t0, tt, dt, rem_file=FALSE, verbose=TRUE){
+summarize_stats_CSV <- function(
+  read_dir, write_dir=read_dir, mean=TRUE, quantiles=NULL,
+  spn_P, tmax, dt, rem_file=FALSE, verbose=TRUE
+){
 
   ##########
   # Checks
   ##########
   # required parameters
-  if(any(c(missing(read_dir),missing(spn_P),missing(t0),missing(tt),missing(dt)))){
-    stop("Please provide 'read_dir', 'spn_P', 't0', 'tt', and 'dt'.")
+  if(any(c(missing(read_dir),missing(spn_P),missing(tmax),missing(dt)))){
+    stop("Please provide 'read_dir', 'spn_P', 'tmax', and 'dt'.")
   }
+  t0 <- 0
+  tt <- tmax
 
   # check read_dir
   if(!dir.exists(read_dir)){
@@ -847,10 +851,10 @@ summarize_stats_CSV <- function(read_dir, write_dir=read_dir, mean=TRUE, quantil
   # Input and Output Setup
   ##########
   # get all files to work on, sorted by type
-  stage = c("E","L","P","M","U","FS","FE","FI","H",  "EE","LE","PE","FSEI")
+  stage = c("E","L","P","M","U","FS","FE","FI","H","EE","LE","PE","FSEI","F")
   repDirs <- list.dirs(path = read_dir, recursive = FALSE, full.names = TRUE)
   fileList <- lapply(X = stage, FUN = function(x){
-                                lapply(X = repDirs, FUN = list.files, pattern = paste0("^",x),
+                                lapply(X = repDirs, FUN = list.files, pattern = paste0("^",x,"_"),
                                        full.names = TRUE, recursive = FALSE)
                      })
 
@@ -934,7 +938,7 @@ summarize_stats_CSV <- function(read_dir, write_dir=read_dir, mean=TRUE, quantil
       }
 
     # begin logic tree
-    if(stage[analysis] %in% c("E","L","P","M","U","FS","FE","FI")){
+    if(stage[analysis] %in% c("E","L","P","M","U","FS","FE","FI","F")){
       base_MQ(fList = fileList[[analysis]],oDir = write_dir,sName = stage[analysis],
               nodeNames = mosyNodeNames,nNodes = numMosyNodes,genos = mosyGenos,
               nGenos = numMosyGenos,times = times,nTimes = nTimes,num_repss = numReps,

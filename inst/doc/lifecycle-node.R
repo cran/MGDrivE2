@@ -93,7 +93,7 @@ tmax <- 125
 dt <- 1
 
 # run deterministic simulation
-ODE_out <- sim_trajectory_R(x0 = initialCons$M0, t0 = 0, tt = tmax, dt = dt, S = S,
+ODE_out <- sim_trajectory_R(x0 = initialCons$M0, tmax = tmax, dt = dt, S = S,
                             hazards = approx_hazards, sampler = "ode", method = "lsoda",
                             events = events, verbose = FALSE)
 
@@ -120,7 +120,7 @@ ggplot(data = rbind(ODE_out_f, ODE_out_m)) +
 dt_stoch <- 0.1
 
 # tau sampling
-PTS_out <- sim_trajectory_R(x0 = initialCons$M0, t0 = 0, tt = tmax, dt = dt,
+PTS_out <- sim_trajectory_R(x0 = initialCons$M0, tmax = tmax, dt = dt,
                             dt_stoch = dt_stoch, S = S, hazards = exact_hazards,
                             sampler = "tau", events = events, verbose = FALSE)
 
@@ -160,7 +160,7 @@ exact_hazards <- spn_hazards(spn_P = SPN_P, spn_T = SPN_T, cube = cube,
 
 ## -----------------------------------------------------------------------------
 # deterministic simulation
-ODE_out <- sim_trajectory_R(x0 = initialCons$M0, t0 = 0, tt = tmax, dt = dt,
+ODE_out <- sim_trajectory_R(x0 = initialCons$M0, tmax = tmax, dt = dt,
                             S = S, hazards = approx_hazards, sampler = "ode",
                             events = events, verbose = FALSE)
 
@@ -218,7 +218,7 @@ ggplot(data = rbind(ODE_out_f, ODE_out_m)) +
 
 ## -----------------------------------------------------------------------------
 # chemical langevin sampler
-CLE_out <- sim_trajectory_R(x0 = initialCons$M0, t0 = 0, tt = tmax, dt = dt,
+CLE_out <- sim_trajectory_R(x0 = initialCons$M0, tmax = tmax, dt = dt,
                             dt_stoch = dt_stoch, S = S, hazards = approx_hazards,
                             sampler = "cle", events = events, verbose = FALSE)
 

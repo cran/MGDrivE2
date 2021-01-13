@@ -2,7 +2,7 @@
 % Please edit documentation in R/auxiliary-analysis.R
 \name{base_sum_F}
 \alias{base_sum_F}
-\title{Base Summary of Erlang Stages for Adult Females}
+\title{Base Summary of Infection (SEI) Stages for Adult Females}
 \usage{
 base_sum_F(fileList, outList, genos, nGenos, nErlang, times, nTimes, nNodes)
 }

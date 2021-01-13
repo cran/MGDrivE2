@@ -1,7 +1,7 @@
 Package: MGDrivE2
 Type: Package
 Title: Mosquito Gene Drive Explorer 2
-Version: 1.0.1
+Version: 1.1.0
 Authors@R: c(
     person("Sean L.", "Wu", email = "slwood89@gmail.com", role = c("aut","cre")),
     person("Jared B.", "Bennett", email = "jared_bennett@berkeley.edu ", role = "aut"),
@@ -32,7 +32,7 @@ Suggests: MGDrivE, knitr, rmarkdown, ggplot2
 VignetteBuilder: knitr
 RoxygenNote: 7.1.1
 NeedsCompilation: no
-Packaged: 2020-10-16 21:06:45 UTC; slwu89
+Packaged: 2021-01-12 23:50:54 UTC; slwu89
 Author: Sean L. Wu [aut, cre],
   Jared B. Bennett [aut],
   Héctor Manuel Sánchez Castellanos [ctb],
@@ -40,4 +40,4 @@ Author: Sean L. Wu [aut, cre],
   Andrew J. Dolgert [ctb],
   John M. Marshall [aut]
 Repository: CRAN
-Date/Publication: 2020-10-24 09:30:03 UTC
+Date/Publication: 2021-01-13 06:00:03 UTC

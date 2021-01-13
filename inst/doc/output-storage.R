@@ -150,7 +150,7 @@ for(i in rep_folders){ dir.create(i) }
 dt_stoch <- 0.1
 
 # run tau-leaping simulation
-sim_trajectory_CSV(x0 = initialCons$M0, t0 = 0, tt = tmax, dt = dt,
+sim_trajectory_CSV(x0 = initialCons$M0, tmax = tmax, dt = dt,
                    dt_stoch = dt_stoch, folders = rep_folders,
                    stage = c("E", "L", "P", "M", "U", "F", "H"), S = S,
                    hazards = exact_hazards, events = events, verbose = FALSE)
@@ -182,7 +182,7 @@ colnames(fs_stage)
 ## -----------------------------------------------------------------------------
 # split everything by patch, aggregate by genotype
 split_aggregate_CSV(read_dir = analysis_folders[1], write_dir = analysis_folders[2],
-                    spn_P = SPN_P, t0 = 0, tt = tmax, dt = dt, verbose = FALSE)
+                    spn_P = SPN_P, tmax = tmax, dt = dt, verbose = FALSE)
 
 ## -----------------------------------------------------------------------------
 # don't list parent directory
@@ -217,7 +217,7 @@ colnames(fs_stage)
 ## -----------------------------------------------------------------------------
 # mean and 95% quantiles
 summarize_stats_CSV(read_dir = analysis_folders[2], write_dir = analysis_folders[3],
-                    spn_P = SPN_P, t0 = 0, tt = tmax, dt = dt, mean = TRUE,
+                    spn_P = SPN_P, tmax = tmax, dt = dt, mean = TRUE,
                     quantiles = c(0.025, 0.975), verbose = FALSE)
 
 ## -----------------------------------------------------------------------------

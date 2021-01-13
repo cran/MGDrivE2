@@ -35,12 +35,16 @@
 #' stochastic matrices, just a binary matrix that say if i,j can exchange population.
 #' Diagonal elements must be \code{FALSE}.
 #'
+#' At least one of the arguments \code{n} and \code{m_move} must be provided. If both are provided
+#' \code{n} is ignored.
+#'
 #' For examples of using this function, see:
 #' \code{vignette("lifecycle-network", package = "MGDrivE2")}
 #'
 #' @param spn_P set of places produced by \code{\link{spn_P_lifecycle_network}}
 #' @param params a named list of parameters (see details)
 #' @param cube an inheritance cube from the \code{MGDrivE} package (e.g. \code{\link[MGDrivE]{cubeMendelian}})
+#' @param n an integer giving the number of nodes
 #' @param m_move binary adjacency matrix indicating if movement of mosquitoes between nodes is possible or not
 #'
 #' @return a list with two elements: \code{T} contains transitions packets as lists,
@@ -50,7 +54,17 @@
 #' @importFrom utils tail
 #'
 #' @export
-spn_T_lifecycle_network <- function(spn_P,params,cube,m_move){
+spn_T_lifecycle_network <- function(spn_P,params,cube, n = NULL, m_move = NULL){
+
+  stopifnot(!is.null(n) | !is.null(m_move)) # must provide at least one
+
+  if(!is.null(m_move)){
+    if(any(Matrix::diag(m_move))){
+      stop("adjacency matrix 'm_move' must have all FALSE elements along its diagonal")
+    }
+    n <- nrow(m_move)
+  }
+  stopifnot(n > 1)
 
   # set of places
   u <- spn_P$u
@@ -60,65 +74,65 @@ spn_T_lifecycle_network <- function(spn_P,params,cube,m_move){
   g <- cube$genotypesID
 
   # within node transitions
-  T_meta <- vector("list",nrow(m_move))
+  T_meta <- vector("list",n)
   T_index <- 1
 
   # make all of the transitions in each node
-  for(id in 1:nrow(m_move)){
+  for(id in 1:n){
     # only 1 type of nodes
     T_meta[[id]] <- spn_T_mosy_lifecycle(u = u, nE = params$nE, nL = params$nL,
                                          nP = params$nP, cube = cube, node_id = id,
                                          T_index = T_index)
   } # end loop over nodes
 
-
-  # make mosquito movement events
-  # checks first
-  if(any(Matrix::diag(m_move))){
-    stop("adjacency matrix 'm_move' must have all FALSE elements along its diagonal")
-  }
-
   # make transition events
   # edges: need to make mosquito movement for these edges
-  edges <- arrayInd(Matrix::which(m_move),.dim=dim(m_move))
-  edges <- edges[order(edges[,1]),]
+  female_move <- NULL
+  male_move <- NULL
 
-  # make female movement
-  female_move <- vector("list",nrow(edges)*(nG^2))
-  vv <- 1
+  # non null movement
+  if(!is.null(m_move)){
 
-  # iterate over edges
-  for(e in 1:nrow(edges)){
-    # ... and over female genotypes
-    for(f in 1:nG){
-      # ... and over male mate genotypes
+    edges <- arrayInd(Matrix::which(m_move),.dim=dim(m_move))
+    edges <- edges[order(edges[,1]),]
+
+    # make female movement
+    female_move <- vector("list",nrow(edges)*(nG^2))
+    vv <- 1
+
+    # iterate over edges
+    for(e in 1:nrow(edges)){
+      # ... and over female genotypes
+      for(f in 1:nG){
+        # ... and over male mate genotypes
+        for(m in 1:nG){
+          female_move[[vv]] <- make_transition_move_female(T_index = T_index,u = u,
+                                                           f_gen = g[f],m_gen = g[m],
+                                                           origin = edges[e,1],
+                                                           dest = edges[e,2])
+          T_index <- T_index + 1
+          vv <- vv + 1
+        }
+      }
+    }
+
+    # make male movement
+    male_move <- vector("list",nrow(edges)*nG)
+    vv <- 1
+
+    # iterate over edges
+    for(e in 1:nrow(edges)){
+      # ... and over male genotypes
       for(m in 1:nG){
-        female_move[[vv]] <- make_transition_move_female(T_index = T_index,u = u,
-                                                         f_gen = g[f],m_gen = g[m],
-                                                         origin = edges[e,1],
-                                                         dest = edges[e,2])
+        male_move[[vv]] <- make_transition_move_male(T_index = T_index,u = u,
+                                                     m_gen = g[m],origin = edges[e,1],
+                                                     dest = edges[e,2])
         T_index <- T_index + 1
         vv <- vv + 1
       }
     }
+
   }
-
-  # make male movement
-  male_move <- vector("list",nrow(edges)*nG)
-  vv <- 1
-
-  # iterate over edges
-  for(e in 1:nrow(edges)){
-    # ... and over male genotypes
-    for(m in 1:nG){
-      male_move[[vv]] <- make_transition_move_male(T_index = T_index,u = u,
-                                                   m_gen = g[m],origin = edges[e,1],
-                                                   dest = edges[e,2])
-      T_index <- T_index + 1
-      vv <- vv + 1
-    }
-  }
-
 
   # set of transitions
   v <- c(unlist(x = lapply(X = T_meta, FUN = '[[', 'v'), use.names = FALSE),

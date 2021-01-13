@@ -91,7 +91,7 @@ events <- data.frame("var" = paste0("F_", cube$releaseType, "_", cube$wildType, 
 
 ## -----------------------------------------------------------------------------
 # run deterministic simulation
-ODE_out <- sim_trajectory_R(x0 = initialCons$M0, t0 = 0, tt = tmax, dt = dt, S = S,
+ODE_out <- sim_trajectory_R(x0 = initialCons$M0, tmax = tmax, dt = dt, S = S,
                             hazards = approx_hazards, sampler = "ode", method = "lsoda",
                             events = events, verbose = FALSE)
 
@@ -132,7 +132,7 @@ ggplot(data = rbind(ODE_female,ODE_humans) ) +
 dt_stoch <- 0.1
 
 # run CLE simulation
-CLE_out <- sim_trajectory_R(x0 = initialCons$M0, t0 = 0, tt = tmax, dt = dt,
+CLE_out <- sim_trajectory_R(x0 = initialCons$M0, tmax = tmax, dt = dt,
                             dt_stoch = dt_stoch, S = S, hazards = approx_hazards,
                             sampler = "cle", events = events, verbose = FALSE)
 

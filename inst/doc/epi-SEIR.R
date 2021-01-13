@@ -108,7 +108,7 @@ events <- rbind(m_events, h_events)
 
 ## -----------------------------------------------------------------------------
 # run deterministic simulation
-ODE_out <- sim_trajectory_R(x0 = initialCons$M0, t0 = 0, tt = tmax, dt = dt, S = S,
+ODE_out <- sim_trajectory_R(x0 = initialCons$M0, tmax = tmax, dt = dt, S = S,
                             hazards = approx_hazards, sampler = "ode", method = "lsoda",
                             events = events, verbose = FALSE)
 
@@ -132,7 +132,7 @@ ggplot(data = rbind(ODE_female, ODE_humans) ) +
 dt_stoch <- 0.2
 
 # run tau-leaping simulation
-PTS_out <- sim_trajectory_R(x0 = initialCons$M0, t0 = 0, tt = tmax, dt = dt,
+PTS_out <- sim_trajectory_R(x0 = initialCons$M0, tmax = tmax, dt = dt,
                             dt_stoch = dt_stoch, S = S, hazards = exact_hazards,
                             sampler = "tau", events = events, verbose = FALSE)
 
@@ -273,7 +273,7 @@ events <- rbind(m_events,  h_events)
 
 ## -----------------------------------------------------------------------------
 # run deterministic simulation
-ODE_out <- sim_trajectory_R(x0 = initialCons$M0, t0 = 0, tt = tmax, dt = dt, S = S,
+ODE_out <- sim_trajectory_R(x0 = initialCons$M0, tmax = tmax, dt = dt, S = S,
                             hazards = approx_hazards, sampler = "ode", method = "lsoda",
                             events = events, verbose = FALSE)
 
@@ -346,7 +346,7 @@ ggplot(data = rbind(ODE_female,ODE_humans) ) +
 dt_stoch <- 0.1
 
 # run cle simulation
-CLE_out <- sim_trajectory_R(x0 = initialCons$M0, t0 = 0, tt = tmax, dt = dt,
+CLE_out <- sim_trajectory_R(x0 = initialCons$M0, tmax = tmax, dt = dt,
                             dt_stoch = dt_stoch, S = S, hazards = approx_hazards,
                             sampler = "cle", events = events, verbose = FALSE)
 

@@ -7,6 +7,7 @@
 #
 ################################################################################
 
+
 #' Make Mean-field Approximation (ODE) Numerical Integrator for a SPN Model
 #'
 #' Make a function closure to implement a first order mean-field ODE approximation
@@ -55,12 +56,13 @@ step_ODE <- function(S,Sout,haz,method="lsoda"){
     track <- TRUE
 
     dxdt <- function(t,state,par=NULL){
-      h <- vapply(X = haz,FUN = function(h){h(t=t,M=state)},FUN.VALUE = numeric(1),USE.NAMES = FALSE)
+      h <- haz(t=t,M=state)
       list(
         (S %*% h)[,1],
         (Sout %*% h)[,1]
       )
     }
+
     nout <- nrow(Sout)
     xout <- 2:(u+1)
     oout <- (u+2):(u+2+nout-1)
@@ -69,8 +71,12 @@ step_ODE <- function(S,Sout,haz,method="lsoda"){
     track <- FALSE
 
     dxdt <- function(t,state,par=NULL){
-      list((S %*% vapply(X = haz,FUN = function(h){h(t=t,M=state)},FUN.VALUE = numeric(1),USE.NAMES = FALSE))[,1])
+      h <- haz(t=t,M=state)
+      list(
+        (S %*% h)[,1]
+      )
     }
+
   }
 
   return(
@@ -93,25 +99,3 @@ step_ODE <- function(S,Sout,haz,method="lsoda"){
          }
        )
 }
-
-# step_ODE <- function(S,haz,method="lsoda"){
-#
-#   # assign to local environment
-#   S <- S
-#   haz <- haz
-#   method <- method
-#
-#   dxdt <- function(t,state,par=NULL){
-#     list((S %*% vapply(X = haz,FUN = function(h){h(t=t,M=state)},FUN.VALUE = numeric(1),USE.NAMES = FALSE))[,1])
-#   }
-#
-#   return(
-#          function(x0, t0, deltat){
-#            # solve ODEs over the step
-#            X <- ode(y = x0,times = c(t0,t0+deltat),func = dxdt,parms = NULL,method=method)
-#            return(
-#              X[2,-1]
-#            )
-#          }
-#        )
-# }
