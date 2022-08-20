@@ -53,7 +53,7 @@
 #' or cumulative intensity (for continuous stochastic simulations), or the rate function of
 #' particular events for ODE simulation. The matrix must have number of columns equal to
 #' number of events in the system (the number of hazard functions), and a row for each tracking
-#' variable. If \code{Sout} is provided, it output an additional csv, "events.csv".
+#' variable. If \code{Sout} is provided, it outputs an additional csv, "Tracking.csv".
 #' The function \code{\link{track_hinf}} is provided, which builds a matrix to track
 #' human infection events.
 #'
@@ -201,7 +201,7 @@ sim_trajectory_base_CSV <- function(
     # tracking rates/event firing
     if(track){
       event_con <- file(
-        description = paste0(folders[num_reps],.Platform$file.sep,"Events.csv"),
+        description = paste0(folders[num_reps],.Platform$file.sep,"Tracking.csv"),
         open = "wt"
       )
       writeLines(

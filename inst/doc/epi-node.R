@@ -73,7 +73,7 @@ initialCons <- equilibrium_SEI_SIS(params = theta, phi = 0.5, log_dd = TRUE,
                                    spn_P = SPN_P, cube = cube)
 
 ## -----------------------------------------------------------------------------
-# approximate hazards for continous approximation
+# approximate hazards for continuous approximation
 approx_hazards <- spn_hazards(spn_P = SPN_P, spn_T = SPN_T, cube = cube,
                               params = initialCons$params, type = "SIS",
                               log_dd = TRUE, exact = FALSE, tol = 1e-8,

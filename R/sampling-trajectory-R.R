@@ -110,7 +110,7 @@ sim_trajectory_R <- function(
 # Base Functions
 ################################################################################
 #######################################
-# Step Funtion
+# Step Function
 #######################################
 
 # This sets up the step function for sampling
@@ -179,11 +179,9 @@ base_stepFunc <- function(sampler,S,hazards,Sout = NULL,dt_stoch,method,...){
 #
 base_time <- function(t0 = 0,tt,dt){
 
-  # number of steps we need to take
-  n <- (tt-t0) %/% dt + 1
   times <- seq(from=t0,to=tt,by=dt)
 
-  if(length(times) != n){
+  if(!all(fequal(diff(times), dt))){
     stop("error in sequence of times; make sure tt is evenly divisible by dt")
   }
 
@@ -309,9 +307,9 @@ sim_trajectory_base_R <- function(x0, times, num_reps, stepFun, events = NULL, b
       t0 <- times[i-1]
       t1 <- times[i]
       dt <- t1-t0
+
       # tNow <- times[i]
       state <- stepFun(state$x,t0,dt)
-
       if(all(fequal(state$x,0))){
         if(verbose){close(pbar)}
         warning(" --- marking of net is zero; terminating simulation early --- \n")

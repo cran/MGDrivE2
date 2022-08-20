@@ -28,11 +28,18 @@
 #' @param Mrates rate at which adult male batch migration occurs for each node (nodes without mosquitoes should be set to \code{NaN} or \code{NA})
 #' @param Mmove movement matrix for destinations of adult male batch migration events (diagonal will be set to zero and off-diagonal elements normalized)
 #' @param Mprob probability for each individual to be chosen for adult male batch migration events (must be same length as \code{Mrates})
+#' @param stage either \code{NULL} or "E", "L", or "P". If not \code{NULL} and migration for aquatic stages is specified by \code{ELPrates}, only the aquatic stage specified here will move
 #'
 #' @importFrom stats runif
 #'
 #' @export
-batch_migration <- function(SPN_P, tmax, ELPrates = NULL, ELPmove = NULL, ELPprob = NULL, Frates = NULL, Fmove = NULL, Fprob = NULL, Mrates = NULL, Mmove = NULL, Mprob = NULL){
+batch_migration <- function(
+  SPN_P, tmax,
+  ELPrates = NULL, ELPmove = NULL, ELPprob = NULL,
+  Frates = NULL, Fmove = NULL, Fprob = NULL,
+  Mrates = NULL, Mmove = NULL, Mprob = NULL,
+  stage = NULL
+){
 
   if(length(SPN_P$ix)<2){
     stop("cannot set up batch migration for a 1-node system")
@@ -49,11 +56,16 @@ batch_migration <- function(SPN_P, tmax, ELPrates = NULL, ELPmove = NULL, ELPpro
     }
     diag(ELPmove) <- 0
 
-    ELP <- batch_migration_stage(SPN_P = SPN_P, rates = ELPrates, move = ELPmove, prob = ELPprob, stage = "ELP", tmax = tmax)
+    if(!is.null(stage)){
+      stopifnot(stage %in% c("E","L","P"))
+    }
+
+    aqua_stage <- ifelse(test = is.null(stage),yes = "ELP",no = stage)
+    ELP_events <- batch_migration_stage(SPN_P = SPN_P, rates = ELPrates, move = ELPmove, prob = ELPprob, stage = aqua_stage, tmax = tmax)
 
   } else {
 
-    ELP <- NULL
+    ELP_events <- NULL
 
   }
 
@@ -68,11 +80,11 @@ batch_migration <- function(SPN_P, tmax, ELPrates = NULL, ELPmove = NULL, ELPpro
     }
     diag(Fmove) <- 0
 
-    F <- batch_migration_stage(SPN_P = SPN_P, rates = Frates, move = Fmove, prob = Fprob, stage = "F", tmax = tmax)
+    F_events <- batch_migration_stage(SPN_P = SPN_P, rates = Frates, move = Fmove, prob = Fprob, stage = "F", tmax = tmax)
 
   } else {
 
-    F <- NULL
+    F_events <- NULL
 
   }
 
@@ -87,15 +99,15 @@ batch_migration <- function(SPN_P, tmax, ELPrates = NULL, ELPmove = NULL, ELPpro
     }
     diag(Mmove) <- 0
 
-    M <- batch_migration_stage(SPN_P = SPN_P, rates = Mrates, move = Mmove, prob = Mprob, stage = "M", tmax = tmax)
+    M_events <- batch_migration_stage(SPN_P = SPN_P, rates = Mrates, move = Mmove, prob = Mprob, stage = "M", tmax = tmax)
 
   } else {
 
-    M <- NULL
+    M_events <- NULL
 
   }
 
-  batch_list <- c(ELP,F,M)
+  batch_list <- c(ELP_events, F_events, M_events)
 
   # sort by time of event
   batch_list <- batch_list[order(sapply(batch_list,function(x){x$time}))]
@@ -113,8 +125,8 @@ batch_migration <- function(SPN_P, tmax, ELPrates = NULL, ELPmove = NULL, ELPpro
 #' @param tmax maximum simulation time
 batch_migration_stage <- function(SPN_P, rates, move, prob, stage, tmax){
 
-  if(!(stage %in% c("ELP","F","M"))){
-    stop("called from 'batch_migration_stage', argument 'stage' must be one of 'ELP', 'F', 'M'")
+  if(!(stage %in% c("ELP","F","M", "E", "L", "P"))){
+    stop("called from 'batch_migration_stage', argument 'stage' must be one of 'ELP', 'E', 'L', 'P', 'F', 'M'")
   }
 
   rates[which(!is.finite(rates))] <- 0
@@ -147,6 +159,15 @@ batch_migration_stage <- function(SPN_P, rates, move, prob, stage, tmax){
         if(stage=="ELP"){
           out$from <- c(SPN_P$ix[[id]]$egg,SPN_P$ix[[id]]$larvae,SPN_P$ix[[id]]$pupae)
         }
+        if(stage == "E"){
+          out$from <- c(SPN_P$ix[[id]]$egg)
+        }
+        if(stage == "L"){
+          out$from <- c(SPN_P$ix[[id]]$larvae)
+        }
+        if(stage == "P"){
+          out$from <- c(SPN_P$ix[[id]]$pupae)
+        }
         if(stage == "F"){
           out$from <- c(SPN_P$ix[[id]]$females_unmated,as.vector(SPN_P$ix[[id]]$females))
         }
@@ -160,6 +181,15 @@ batch_migration_stage <- function(SPN_P, rates, move, prob, stage, tmax){
         for(i in 1:length(event)){
           if(stage=="ELP"){
             out$to[,i] <- c(SPN_P$ix[[event[i]]]$egg,SPN_P$ix[[event[i]]]$larvae,SPN_P$ix[[event[i]]]$pupae)
+          }
+          if(stage == "E"){
+            out$to[,i] <- c(SPN_P$ix[[event[i]]]$egg)
+          }
+          if(stage == "L"){
+            out$to[,i] <- c(SPN_P$ix[[event[i]]]$larvae)
+          }
+          if(stage == "P"){
+            out$to[,i] <- c(SPN_P$ix[[event[i]]]$pupae)
           }
           if(stage == "F"){
             out$to[,i] <- c(SPN_P$ix[[event[i]]]$females_unmated,as.vector(SPN_P$ix[[event[i]]]$females))

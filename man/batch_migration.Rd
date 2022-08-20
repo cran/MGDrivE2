@@ -15,7 +15,8 @@ batch_migration(
   Fprob = NULL,
   Mrates = NULL,
   Mmove = NULL,
-  Mprob = NULL
+  Mprob = NULL,
+  stage = NULL
 )
 }
 \arguments{
@@ -40,6 +41,8 @@ batch_migration(
 \item{Mmove}{movement matrix for destinations of adult male batch migration events (diagonal will be set to zero and off-diagonal elements normalized)}
 
 \item{Mprob}{probability for each individual to be chosen for adult male batch migration events (must be same length as \code{Mrates})}
+
+\item{stage}{either \code{NULL} or "E", "L", or "P". If not \code{NULL} and migration for aquatic stages is specified by \code{ELPrates}, only the aquatic stage specified here will move}
 }
 \description{
 Sample batch migration events for simulation given rates of occurance and probability of destination for each patch.

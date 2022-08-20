@@ -98,7 +98,7 @@ can be provided to track number of event firings each time step (for discrete st
 or cumulative intensity (for continuous stochastic simulations), or the rate function of
 particular events for ODE simulation. The matrix must have number of columns equal to
 number of events in the system (the number of hazard functions), and a row for each tracking
-variable. If \code{Sout} is provided, it output an additional csv, "events.csv".
+variable. If \code{Sout} is provided, it outputs an additional csv, "Tracking.csv".
 The function \code{\link{track_hinf}} is provided, which builds a matrix to track
 human infection events.
 
