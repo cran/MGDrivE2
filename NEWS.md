@@ -1,3 +1,15 @@
+# MGDrivE2 2.1.0
+
+New features:
+
+1. Decoupled/Imperial sampling can now calculate malaria-induced severe disease and mortality. See `human_Imperial_ODE` function for implementation details.
+2. `equilibrium_Imperial_decoupled` updated to calculate the total number of mosquitoes given human population parameters.
+
+Bugfixes:
+
+1. `human_Imperial_ODE` updated to correctly calculate the per-capita force of infection. Does not fail with suppression constructs anymore due to divide-by-zero error.
+2. `base_female_Imperial` updated with correct mosquito density equations to begin the mosquito population at equilibrium, based on epi parameters.
+
 # MGDrivE2 2.0.0
 
 New features

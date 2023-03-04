@@ -13,6 +13,9 @@ value to more dispersed distributions.}
 
 \item{q}{inverse of mean dwell time}
 }
+\value{
+integer value representing the coefficient of variation in Erlang-distributed life stages.
+}
 \description{
 Calculate Erlang shape parameter
 }

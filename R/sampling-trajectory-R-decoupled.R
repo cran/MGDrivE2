@@ -403,19 +403,20 @@ sim_trajectory_base_R_decoupled_Imperial <-
            cube = NULL) {
     # setup return array
     nTime <- length(times)
-    na <- theta$na #number of age compartments
+    na <- theta$na # number of age compartments
     clin_inc <- theta$clin_inc
+    mort <- theta$mort_eq
     human_state_labels <- generate_Imperial_human_state_labels(na)
     retArray <-
       array(
         data = 0,
-        dim = c(nTime, length(c(x0, h0, clin_inc)) + 1, num_reps),
+        dim = c(nTime, length(c(x0, h0, clin_inc, mort)) + 1, num_reps),
         dimnames = list(times, c("time", c(
           names(x0), human_state_labels
         )), 1:num_reps)
       )
     retArray[, 1, ] <- times
-    retArray[1,-1, ] <- c(x0, h0, clin_inc)
+    retArray[1,-1, ] <- c(x0, h0, clin_inc, mort)
     
     # set up event tracking (tracks differences, so one less time output than state)
     if (!is.null(Sout)) {
@@ -476,22 +477,25 @@ sim_trajectory_base_R_decoupled_Imperial <-
           y = state$h,
           times = c(t0, t1),
           func = func,
-          parms = theta,
-          rtol = 1e-10
+          parms = theta
         )
         
         # update human state matrix
         y <- tail(out, 1)
-        num_states <- 10
-        # keep clinical incidence separate, it doesn't contribute to ODE dynamics
+        num_states <- 12
+        # keep clinical incidence and mortality separate, it doesn't contribute to ODE dynamics
         # we're just using it for presentation/viz later on
         human_state_matrix <-
           matrix(y[2:length(y)], ncol = num_states)
-        clin_inc_idx <- 10
+        clin_inc_idx <- 11
+        mort_idx <- 12
+
         clin_inc <- human_state_matrix[, clin_inc_idx]
-        human_state_matrix <- human_state_matrix[,-clin_inc_idx]
+        mort <- human_state_matrix[, mort_idx]
+
+        human_state_matrix <- human_state_matrix[,-c(clin_inc_idx, mort_idx)]
         colnames(human_state_matrix) <-
-          c("S", "T", "D", "A", "U", "P", "ICA", "IB", "ID")
+          c("S", "T", "D", "A", "U", "P", "ICA", "IB", "ID", "IVA")
         
         state$h <- human_state_matrix
         idx <- as.character(t1 + 1)
@@ -504,10 +508,7 @@ sim_trajectory_base_R_decoupled_Imperial <-
           human_trace <-
             human_trace[(num_entries - 15):num_entries]
         }
-        
-        
-        
-        
+               
         if (all(fequal(state$x, 0))) {
           if (verbose) {
             close(pbar)
@@ -547,7 +548,7 @@ sim_trajectory_base_R_decoupled_Imperial <-
         }
         
         # record output + add colnames
-        retArray[i,-1, r] <- c(state$x, state$h, clin_inc)
+        retArray[i,-1, r] <- c(state$x, state$h, clin_inc, mort)
         if (track) {
           ret_events[i - 1,-1, r] <- state$o
         }

@@ -76,7 +76,7 @@ ode_out <- sim_trajectory_R_decoupled(
   h0 = initialCons$H,
   SPN_P = SPN_P,
   theta = theta,
-  tmax = 365,
+  tmax = 100,
   inf_labels = SPN_T$inf_labels,
   dt = dt,
   S = S,
@@ -109,7 +109,7 @@ ggplot(data = ode_humans) +
 
 ## -----------------------------------------------------------------------------
 # delta t - one day
-dt_stoch <- 0.05
+dt_stoch <- 0.1
 dt <- 1
 # run ode-decoupled simulation
 tau_out <- sim_trajectory_R_decoupled(
@@ -127,7 +127,8 @@ tau_out <- sim_trajectory_R_decoupled(
   events = NULL,
   verbose = FALSE,
   human_ode = "Imperial",
-  cube = cube
+  cube = cube, 
+  maxhaz = 1e12
 )
 
 # summarize females/humans by genotype
@@ -173,7 +174,8 @@ tau_out <- sim_trajectory_R_decoupled(
   events = events,
   verbose = FALSE,
   human_ode = "Imperial",
-  cube = cube
+  cube = cube,
+  maxhaz = 1e12
 )
 
 # summarize females/humans by genotype

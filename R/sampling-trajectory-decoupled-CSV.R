@@ -196,6 +196,8 @@ sim_trajectory_base_CSV_decoupled <- function(x0,
   nTime <- length(times)
   na <- theta$na #number of age compartments
   clin_inc <- theta$clin_inc
+  mort <- theta$mort_eq
+
   human_state_labels <- generate_Imperial_human_state_labels(na)
 
   # make index list for all possible output of mosquito epi states
@@ -274,7 +276,7 @@ sim_trajectory_base_CSV_decoupled <- function(x0,
     writeLines(text = paste0(c("Time", human_state_labels), collapse = ","),
                con = fileCons[["H"]],
                sep = "\n")
-    writeLines(text = paste0(c(0, as.vector(h0), clin_inc), collapse = ","),
+    writeLines(text = paste0(c(0, as.vector(h0), clin_inc, mort), collapse = ","),
                con = fileCons[["H"]],
                sep = "\n")
 
@@ -316,19 +318,21 @@ sim_trajectory_base_CSV_decoupled <- function(x0,
         func = func,
         parms = theta
       )
-
       # update human state matrix
       y <- tail(out, 1)
-      num_states <- 10
+      num_states <- 12
       # keep clinical incidence separate, it doesn't contribute to ODE dynamics
       # we're just using it for presentation/viz later on
       human_state_matrix <-
         matrix(y[2:length(y)], ncol = num_states)
-      clin_inc_idx <- 10
+      clin_inc_idx <- 11
+      mort_idx <- 12
+
       clin_inc <- human_state_matrix[, clin_inc_idx]
-      human_state_matrix <- human_state_matrix[, -clin_inc_idx]
+      mort <- human_state_matrix[, mort_idx]
+      human_state_matrix <- human_state_matrix[, -c(clin_inc_idx, mort_idx)]
       colnames(human_state_matrix) <-
-        c("S", "T", "D", "A", "U", "P", "ICA", "IB", "ID")
+        c("S", "T", "D", "A", "U", "P", "ICA", "IB", "ID", "IVA")
 
       state$h <- human_state_matrix
       idx <- as.character(t1 + 1)

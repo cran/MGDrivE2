@@ -36,13 +36,25 @@
 #' @param IB0 Scale parameter. Default = 43.8787
 #' @param kB Shape parameter. Default = 2.15506
 #' @param uB Duration in which immunity is not boosted. Default = 7.19919
+#' @param theta0 Maximum probability of severe infection due to no immunity. Default = 0.0749886
+#' @param theta1 Maximum reduction due to to immunity. Default = 0.0001191
+#' @param iv0 Scale parameter. Default = 1.09629
+#' @param kv Shape parameter. Default = 2.00048
+#' @param av Age-dependent modifier. Default = 2493.41
+#' @param gammaV Age-dependent modifier. Default = 2.91282
+#' @param fvS Age-dependent modifier. Default = 0.141195
+#' @param pctMort Percentage of severe cases that die. Default = 0.215
 #' @param phi0 Maximum probability due to no immunity. Default = 0.791666
 #' @param phi1 Maximum relative reduction due to immunity. Default = 0.000737
 #' @param dCA Inverse of decay rate. Default = 10950
+#' @param dVM Inverse of decay rate. Default = 76.8365
+#' @param dVA Inverse of decay rate. Default = 30 * 365
 #' @param IC0 Scale parameter. Default = 18.02366
 #' @param kC Shape parameter. Default = 2.36949
 #' @param uCA Duration in which immunity is not boosted. Default = 6.06349
+#' @param uVA Duration in which immunity to severe disease is not boosted. Default = 11.4321
 #' @param PM New-born immunity relative to mother’s. Default = 0.774368
+#' @param PVM New-born immunity to severe disease relative to mothers. Default = 0.195768
 #' @param dCM Inverse of decay rate of maternal immunity. Default = 67.6952
 #' @param tau1 Duration of host seeking, assumed to be constant between species. Default = 0.69
 #' @param tau2 Duration of mosquito resting after feed. Default = 2.31
@@ -50,36 +62,42 @@
 #' @param Q0 Anthrophagy probability. Default = 0.92
 #' @param nEIP Number of Erlang-distributed EIP compartments. Default = 6
 #' @param qEIP Inverse of the mean duration of the EIP. Default = 1/10 (days)
-#' @param DY number of days in a year
-#' @param thetaB proportion of bites on a person in bed
-#' @param thetaI proportion of bites on a person outdoors
-#' @param r_llin probability of repeating a feeding attempt due to LLINs
-#' @param s_llin probability of feeding and surviving in presence of LLINs
-#' @param r_irs probability of repeating a feeding attempt due to IRS
-#' @param s_irs probability of feeding and surviving in presence of IRS 
-#' @param qE mosquito egg lifecycle parameter
-#' @param  nE mosquito egg lifecycle parameter
-#' @param  qL mosquito larval lifecycle parameter
-#' @param  nL mosquito larval lifecycle parameter
-#' @param  qP mosquito pupae lifecycle parameter
-#' @param  nP mosquito pupae lifecycle parameter
-#' @param  muE death rate of egg stage
-#' @param  muL death rate of larval stage
-#' @param  muP death rate of pupae stage
-#' @param  muM death rate of male adult stage
-#' @param  eps eggs laid per day
-#' @param  nu mosquito lifecycle parameter
-#' @param  NH number of humans
+#' @param DY number of days in a year. Default = 365
+#' @param thetaB proportion of bites on a person in bed. Default = 0.89
+#' @param thetaI proportion of bites on a person outdoors. Default = 0.97
+#' @param r_llin probability of repeating a feeding attempt due to LLINs. Default = 0.56
+#' @param s_llin probability of feeding and surviving in presence of LLINs. Default = 0.03
+#' @param r_irs probability of repeating a feeding attempt due to IRS. Default = 0.60
+#' @param s_irs probability of feeding and surviving in presence of IRS. Default = 0
+#' @param qE mosquito egg lifecycle parameter. Default = 1/3
+#' @param  nE mosquito egg lifecycle parameter. Default = 2
+#' @param  qL mosquito larval lifecycle parameter. Default = 1/7
+#' @param  nL mosquito larval lifecycle parameter. Default = 3
+#' @param  qP mosquito pupae lifecycle parameter. Default = 1/1
+#' @param  nP mosquito pupae lifecycle parameter. Default = 2
+#' @param  muE death rate of egg stage. Default = 0.05
+#' @param  muL death rate of larval stage. Default = 0.15
+#' @param  muP death rate of pupae stage. Default = 0.05
+#' @param  muM death rate of male adult stage. Default = 0.132
+#' @param  eps eggs laid per day. Default = 58.9
+#' @param  nu mosquito lifecycle parameter. Default = 1/(4/24
+#' @param  NH number of humans. Default = 1000
 #' @param ... Any other parameters needed for non-standard model. If they share the same name
 #' as any of the defined parameters \code{model_param_list_create} will stop. You can either write
 #' any extra parameters you like individually, e.g. model_param_list_create(extra1 = 1, extra2 = 2)
 #' and these parameteres will appear appended to the returned list, or you can pass explicitly
 #' the ellipsis argument as a list created before, e.g. model_param_list_create(...=list(extra1 = 1, extra2 = 2))
 #'
+#' @examples
+#' imperial_model_param_list_create(NH=1500)
+#' imperial_model_param_list_create(qE=1/4)
 #' 
+#' @return A named vector of all baseline parameters required by the Imperial malaria model.
 #' 
 #' This function creates all of the necessary parameters for the Imperial model. Parameters furnished by MGDrivE will be 
 #' removed from this function. Adapted from: https://github.com/mrc-ide/deterministic-malaria-model/blob/master/R/model_parameters.R
+#' 
+#' A newer version of the model also includes parameters for severe disease. See: https://github.com/mrc-ide/malariasimulation for details.
 #' 
 #' @export
 imperial_model_param_list_create <- function(
@@ -121,6 +139,15 @@ imperial_model_param_list_create <- function(
   IB0 = 43.8787,
   kB = 2.15506,
   uB = 7.19919,
+  # Probabiity of severe infection
+  theta0 = 0.0749886, # maximum probability due to no immunity
+  theta1 = 0.0001191, # maximum reduction due to to immunity
+  iv0 = 1.09629, # scale parameter
+  kv = 2.00048, # shape parameter
+  av = 2493.41, # age-dependent modifier
+  gammaV = 2.91282, # age-dependent modifier
+  fvS = 0.141195, # age-dependent modifier
+  pctMort = 0.215, # percentage of severe cases that die
   # Immunity reducing probability of clinical disease
   phi0 = 0.791666,
   phi1 = 0.000737,
@@ -130,6 +157,11 @@ imperial_model_param_list_create <- function(
   uCA = 6.06349,
   PM = 0.774368,
   dCM = 67.6952,
+  # Immunity reducing probability of severe disease
+  dVM = 76.8365,
+  dVA = 30*365,
+  PVM = 0.195768,
+  uVA = 11.4321,
   # entomological parameters
   tau1 = 0.69,
   tau2 = 2.31,
@@ -145,11 +177,11 @@ imperial_model_param_list_create <- function(
   r_irs = 0.60, # probability of repeating a feeding attempt due to IRS
   s_irs = 0, # probability of feeding and surviving in presence of IRS 
   # lifecycle parameters
-  qE = 1/4,
+  qE = 1/3,
   nE = 2,
-  qL = 1/3,
+  qL = 1/7,
   nL = 3,
-  qP = 1/6,
+  qP = 1/1,
   nP = 2,
   muE = 0.05,
   muL = 0.15,
@@ -235,9 +267,23 @@ imperial_model_param_list_create <- function(
   mp_list$PM <- PM
   mp_list$dCM <- dCM
 
+  # severe infection parameters
+  mp_list$theta0 <- theta0
+  mp_list$theta1 <- theta1
+  mp_list$iv0 <- iv0
+  mp_list$kv <- kv
+  mp_list$av <- av
+  mp_list$gammaV <- gammaV
+  mp_list$fvS <- fvS
+  mp_list$pctMort <- pctMort
+  mp_list$dVM <- dVM
+  mp_list$dVA <- dVA
+  mp_list$PVM <- PVM
+  mp_list$uVA <- uVA
+  
   # entomological parameters
 
-    # lifecycle parameters
+  # lifecycle parameters
   mp_list$qE <- qE
   mp_list$nE <- nE
   mp_list$qL <- qL

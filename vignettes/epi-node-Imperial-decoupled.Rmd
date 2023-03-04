@@ -85,7 +85,7 @@ ft <- 0.4 # percent of symptomatic cases that are treated
 
 The **Imperial** disease transmission model sits "on top" of the existing **MGDrivE2** structure, using the default aquatic and male "places", but expanding adult female "places" to follow an Erlang-distributed pathogen incubation period (called the extrinsic incubation period, **EIP**). Information on how to choose the proper **EIP** distribution can be found in the help file for `?makeQ_SEI()`.
 
-The transitions between states is also expanded, providing transitions for females to progress in infection status and allowing interaction between mosquito and human states through decoupled sampling. All of these additions are handled internally by `spn_T_epiSIS_node()`. Since only the mosquito portion is stochastic, the SPN will only include the mosquito states. Human states will be handled by the sampling algorithm in the form of a deterministic ODE, the `human_Imperial_ODE` function. Currently, decoupled sampling is only 
+The transitions between states is also expanded, providing transitions for females to progress in infection status and allowing interaction between mosquito and human states through decoupled sampling. All of these additions are handled internally by `spn_T_epiSIS_node()`. Since only the mosquito portion is stochastic, the SPN will only include the mosquito states. Human states will be handled by the sampling algorithm in the form of a deterministic ODE, the `human_Imperial_ODE` function. 
 
 ```{r}
 # Places and transitions
@@ -146,7 +146,7 @@ ode_out <- sim_trajectory_R_decoupled(
   h0 = initialCons$H,
   SPN_P = SPN_P,
   theta = theta,
-  tmax = 365,
+  tmax = 100,
   inf_labels = SPN_T$inf_labels,
   dt = dt,
   S = S,
@@ -183,7 +183,7 @@ As a further example, we run a single stochastic realization of the same simulat
 
 ```{r}
 # delta t - one day
-dt_stoch <- 0.05
+dt_stoch <- 0.1
 dt <- 1
 # run ode-decoupled simulation
 tau_out <- sim_trajectory_R_decoupled(
@@ -201,7 +201,8 @@ tau_out <- sim_trajectory_R_decoupled(
   events = NULL,
   verbose = FALSE,
   human_ode = "Imperial",
-  cube = cube
+  cube = cube, 
+  maxhaz = 1e12
 )
 
 # summarize females/humans by genotype
@@ -254,7 +255,8 @@ tau_out <- sim_trajectory_R_decoupled(
   events = events,
   verbose = FALSE,
   human_ode = "Imperial",
-  cube = cube
+  cube = cube,
+  maxhaz = 1e12
 )
 
 # summarize females/humans by genotype

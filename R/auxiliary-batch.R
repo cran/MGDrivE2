@@ -29,7 +29,8 @@
 #' @param Mmove movement matrix for destinations of adult male batch migration events (diagonal will be set to zero and off-diagonal elements normalized)
 #' @param Mprob probability for each individual to be chosen for adult male batch migration events (must be same length as \code{Mrates})
 #' @param stage either \code{NULL} or "E", "L", or "P". If not \code{NULL} and migration for aquatic stages is specified by \code{ELPrates}, only the aquatic stage specified here will move
-#'
+#' 
+#' @return vector of lists describing all batch migration events, segmented by life stage.
 #' @importFrom stats runif
 #'
 #' @export

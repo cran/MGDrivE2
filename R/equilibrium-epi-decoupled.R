@@ -341,7 +341,6 @@ equilibrium_Imperial_decoupled_human <- function(age_vector, ft, EIR, model_para
   if(!is.numeric(ft)) stop("ft provided is not numeric")
   if(!is.numeric(EIR)) stop("EIR provided is not numeric")
 
-
   ## population demographics
   age <- age_vector * mpl$DY
   na <- as.integer(length(age))  # number of age groups
@@ -417,8 +416,11 @@ equilibrium_Imperial_decoupled_human <- function(age_vector, ft, EIR, model_para
   FOI_eq <- matrix(0, na, nh)
   ID_eq <- matrix(0, na, nh)
   ICA_eq <- matrix(0, na, nh)
+  IVA_eq <- matrix(0,na,nh)
   ICM_init_eq <- vector(length = nh, mode = "numeric")
   ICM_eq <- matrix(0, na, nh)
+  IVM_init_eq <- vector(length = nh, mode = "numeric")
+  IVM_eq <- matrix(0, na, nh)
   cA_eq <- matrix(0, na, nh)
   p_det_eq <- matrix(0, na, nh)
   FOIvij_eq <- matrix(0, na, nh)
@@ -435,6 +437,8 @@ equilibrium_Imperial_decoupled_human <- function(age_vector, ft, EIR, model_para
                         FOI_eq[i, j]/(FOI_eq[i, j] * mpl$uD + 1) * x_I[i])/(1 + x_I[i]/mpl$dID)
       ICA_eq[i, j] <- (ifelse(i == 1, 0, ICA_eq[i - 1, j]) +
                          FOI_eq[i,j]/(FOI_eq[i, j] * mpl$uCA + 1) * x_I[i])/(1 + x_I[i]/mpl$dCA)
+      IVA_eq[i, j] <- (ifelse(i == 1, 0, IVA_eq[i - 1, j]) +
+                         FOI_eq[i,j]/(FOI_eq[i, j] * mpl$uVA + 1) * x_I[i])/(1 + x_I[i]/mpl$dVA)
       p_det_eq[i, j] <- mpl$d1 + (1 - mpl$d1)/(1 + fd[i] * (ID_eq[i, j]/mpl$ID0)^mpl$kD)
       cA_eq[i, j] <- mpl$cU + (mpl$cD - mpl$cU) * p_det_eq[i, j]^mpl$gamma1
     }
@@ -449,6 +453,10 @@ equilibrium_Imperial_decoupled_human <- function(age_vector, ft, EIR, model_para
                                     (ICA_eq[age20u, j] - ICA_eq[age20l, j]))
       ICM_eq[i, j] <- ifelse(i == 1,
                              ICM_init_eq[j], ICM_eq[i - 1,j])/(1 + x_I[i]/mpl$dCM)
+      IVM_init_eq[j] <- mpl$PVM * (IVA_eq[age20l, j] + age_20_factor *
+                                    (IVA_eq[age20u, j] - IVA_eq[age20l, j]))
+      IVM_eq[i, j] <- ifelse(i == 1,
+                             IVM_init_eq[j], IVM_eq[i - 1,j])/(1 + x_I[i]/mpl$dVM)
     }
   }
 
@@ -542,6 +550,11 @@ equilibrium_Imperial_decoupled_human <- function(age_vector, ft, EIR, model_para
   # pathogen prevalence
   prev_eq <- sum(A_eq) + sum(U_eq) + sum(D_eq) + sum(T_eq)
 
+  fv <- 1 - (1-mpl$fvS)/(1+(age/mpl$av)^mpl$gammaV)
+  immunity_multiplier <- ((IVA_eq+IVM_eq)/mpl$iv0)^mpl$kv
+  severe_disease <- mpl$theta0*(mpl$theta1 + ((1-mpl$theta1)/(1+fv*immunity_multiplier)))*(A_eq + U_eq + T_eq + D_eq)
+  mort_eq <- mpl$pctMort*severe_disease
+
   ## collate into state variables and parameters needed for ODE model
   state <- c(
     S = S_eq,
@@ -552,7 +565,8 @@ equilibrium_Imperial_decoupled_human <- function(age_vector, ft, EIR, model_para
     P = P_eq,
     ICA = ICA_eq,
     IB = IB_eq,
-    ID = ID_eq
+    ID = ID_eq,
+    IVA = IVA_eq
   )
 
   params <- list(
@@ -585,19 +599,25 @@ equilibrium_Imperial_decoupled_human <- function(age_vector, ft, EIR, model_para
     dc = mpl$dCA,
     db = mpl$dB,
     dd = mpl$dID,
+    dv = mpl$dVA,
     x_I = x_I,
     FOI_eq = FOI_eq,
     na = na,
     ICM=ICM_eq,
+    IVM = IVM_eq,
     IC0 = mpl$IC0,
     uD = mpl$uD,
     Iv_eq = Iv_eq,
+    Sv_eq = Sv_eq,
+    Ev_eq = Ev_eq,
     mv0=mv0,
     Sv_eq=Sv_eq,
     Ev_eq=Ev_eq,
     FOIv_eq=FOIv_eq,
     clin_inc = phi_eq * FOI_eq * c(S_eq+A_eq+U_eq),
-    prev_eq = prev_eq
+    prev_eq = prev_eq,
+    mort_eq = mort_eq,
+    age_days = age
   )
   return(list(state=state, params = params))
 }
@@ -655,9 +675,16 @@ equilibrium_Imperial_decoupled <-
 
     # augment theta with Imperial params needed to calculate mosquito equilibrium
     # also add derived beta (egg laying rate parameter)
+    # calculate the total number of adult mosquitos from eqm distribution
+    total_daily_eir <- eir * theta$NH / 365
+    lifetime <- human_eqm$params$FOIv_eq * exp(-theta$muF * (1/theta$qEIP)) / (human_eqm$params$FOIv_eq + theta$muF)
+    total_M <- total_daily_eir / sum(theta$av0 * theta$Q0 * lifetime)
     theta$FOIv <- human_eqm$params$FOIv_eq
     theta$Iv_eq <- human_eqm$params$Iv_eq
-
+    theta$Sv_eq <- human_eqm$params$Sv_eq
+    theta$Ev_eq <- human_eqm$params$Ev_eq
+    theta$mv0 <- human_eqm$params$mv0
+    theta$total_M <- total_M 
 
     initialCons <-
       equilibrium_SEI_Imperial(
@@ -672,9 +699,9 @@ equilibrium_Imperial_decoupled <-
     theta <- c(theta, initialCons$params, human_eqm$params)
 
     # convert to matrix for use in ODE
-    initialCons$H <- matrix(human_eqm$state, ncol = 9)
+    initialCons$H <- matrix(human_eqm$state, ncol = 10)
     colnames(initialCons$H) <-
-      c("S", "T", "D", "A", "U", "P", "ICA", "IB", "ID")
+      c("S", "T", "D", "A", "U", "P", "ICA", "IB", "ID", "IVA")
 
     # update inheritance cube with transmission blocking parameters
     # augment the cube with RM transmission parameters

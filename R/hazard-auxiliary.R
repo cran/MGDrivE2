@@ -99,7 +99,7 @@ movement_prob2rate <- function(tau){
 #' smaller values of CV correspond to distributions less dispersed around their mean and larger
 #' value to more dispersed distributions.
 #' @param q inverse of mean dwell time
-#'
+#' @return integer value representing the coefficient of variation in Erlang-distributed life stages.
 #' @export
 get_shape <- function(cv,q){
   stopifnot(cv >= 1e-3)

@@ -71,7 +71,7 @@
 #'  * \strong{(Epidemiological parameters)}
 #'    * \code{NH}: number of humans, can be a vector
 #'    * \code{FOIv}: force of infection on mosquitoes, supplied from Imperial equilibrium function
-#'    * \code{Iv_eq}: per-capita proportion of infectious mosquitoes 
+#'    * \code{Iv_eq}: per-capita proportion of infectious mosquitoes
 #' The return list contains all of the parameters necessary later in the simulations.
 #'
 #'
@@ -267,7 +267,6 @@ equilibrium_SEI_Imperial <- function(params, node_list="b",NF=NULL,phi=0.5, NH=N
   }
   retList$init <- initMat
   retList$M0 <- M0
-
   return(retList)
 
 }
@@ -363,9 +362,7 @@ base_female_Imperial <- function(params){
   with(params,{
 
     # total number of infectious vectors
-    # per-capita proportion * total number of humans
-    IV <- Iv_eq * NH
-
+    IV <- Iv_eq * total_M
 
     # setup female pops for return
     nNode <- length(NH)
@@ -387,15 +384,13 @@ base_female_Imperial <- function(params){
         ttd <- ttd/sum(ttd)
         # total number of mosquitos
         NV <- IV[node] / tail(ttd,1)
-
         # set female mosquito distribution
-        femPop[node, ] <- NV*ttd
+        femPop[node, ] <- NV*ttd*mv0
       } else {
-        stop("Equilibrium FOIv must be greater than 0. Check output of equilibrium_Imperial_decoupled_human function.")
+        stop("Equilibrium FOIv munst be greater than 0. Check output of equilibrium_Imperial_decoupled_human function.")
       }
 
     } # end node loop
-
     # return matrix of female mosquitoes
     return(femPop)
 

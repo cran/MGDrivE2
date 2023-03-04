@@ -44,6 +44,9 @@ batch_migration(
 
 \item{stage}{either \code{NULL} or "E", "L", or "P". If not \code{NULL} and migration for aquatic stages is specified by \code{ELPrates}, only the aquatic stage specified here will move}
 }
+\value{
+vector of lists describing all batch migration events, segmented by life stage.
+}
 \description{
 Sample batch migration events for simulation given rates of occurance and probability of destination for each patch.
 Batch migration can be simulated for the aquatic life stages (eggs, larvae, pupae), adult females, and/or adult males.

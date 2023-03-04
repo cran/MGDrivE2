@@ -83,8 +83,8 @@ spn_T_lifecycle_network <- function(spn_P,params,cube, n = NULL, m_move = NULL){
     T_meta[[id]] <- spn_T_mosy_lifecycle(u = u, nE = params$nE, nL = params$nL,
                                          nP = params$nP, cube = cube, node_id = id,
                                          T_index = T_index)
-  } # end loop over nodes
-
+  } 
+  # end loop over nodes
   # make transition events
   # edges: need to make mosquito movement for these edges
   female_move <- NULL
@@ -139,7 +139,6 @@ spn_T_lifecycle_network <- function(spn_P,params,cube, n = NULL, m_move = NULL){
          unlist(x = lapply(X = c(female_move, male_move), FUN = '[[', 'label'),
                 use.names = FALSE))
 
-
   # all the transitions
   T_all <- list("T_win" = do.call(c,lapply(X = T_meta,FUN = '[[', 'T')),
                 "female_move" = female_move,
@@ -156,7 +155,6 @@ spn_T_lifecycle_network <- function(spn_P,params,cube, n = NULL, m_move = NULL){
     stop(paste0("error in set of transitions T and transition vector at transition(s): ",
                 paste0(v[(labels != v[indices])], collapse = ", ")))
   }
-
 
   return(list("T" = T_all,
               "v" = v) )
@@ -427,6 +425,7 @@ spn_T_mosy_lifecycle <- function(u,nE,nL,nP,cube,node_id = NULL,T_index){
 
   # OVIPOSITION
   ovi_dims <- dim(cube$ih)
+  x <- vector()
   for(i in 1:ovi_dims[1]){
     for(j in 1:ovi_dims[2]){
       for(k in 1:ovi_dims[3]){
@@ -436,11 +435,14 @@ spn_T_mosy_lifecycle <- function(u,nE,nL,nP,cube,node_id = NULL,T_index){
                                                   o_gen=g[k],node=node_id)
           T_index <- T_index + 1
           vv <- vv + 1
-        }
+          x <- c(x, i*j*k)
+        } 
       }
     }
   }
-
+  # safety check 
+  ovi_tt <- ovi_tt[lengths(ovi_tt)!=0]
+  
   # make pupae -> female emergence
   pupae_2female_tt <- vector("list",nG^2)
   vv <- 1

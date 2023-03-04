@@ -19,6 +19,7 @@
 #' @param params a named list of parameters
 #' @param IRS_cov proportion of humans in the node receiving IRS 
 #' @param LLIN_cov proportion of humans in the node receiving LLIN 
+#'
 #' @return a vector of the equilibrium number of females in each SEI stage
 #' @export
 add_interventions <- function(params, IRS_cov, LLIN_cov) {

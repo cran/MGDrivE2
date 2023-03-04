@@ -176,9 +176,9 @@ spn_Post <- function(spn_P, spn_T){
 #'
 #' @param spn_P set of places (P) (see details)
 #' @param spn_T set of transitions (T) (see details)
-#'
+#' @return stoichiometry matrix representing the net effect of a transition in the SPN state model.
 #' @importFrom Matrix drop0 t
-#'
+#' 
 #' @export
 spn_S <- function(spn_P,spn_T){
 

@@ -169,7 +169,9 @@ generate_Imperial_human_state_labels <- function(na) {
     paste0("ICA", labels),
     paste0("IB", labels),
     paste0("ID", labels),
-    paste0("clin_inc", labels)
+    paste0("IVA", labels),
+    paste0("clin_inc", labels),
+    paste0("mort", labels)
   )
 
   return(human_state_labels)

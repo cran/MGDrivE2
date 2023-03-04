@@ -21,6 +21,7 @@ human_Imperial_ODE <- function(t, state, parameters) {
         indices[["ICA"]] <- 7
         indices[["IB"]] <- 8
         indices[["ID"]] <- 9
+        indices[["IVA"]] <- 10
 
         state <- matrix(state, ncol=length(indices))
 
@@ -37,8 +38,12 @@ human_Imperial_ODE <- function(t, state, parameters) {
         ICA <- state[, indices[["ICA"]]]
         IB <- state[, indices[["IB"]]]
         ID <- state[, indices[["ID"]]]
+        IVA <- state[, indices[["IVA"]]]
 
         Y <- S + A + U
+
+        # infected states
+        infected <- A + U + T + D
 
         # human dynamics
         dS <- rep(0, na)
@@ -54,10 +59,8 @@ human_Imperial_ODE <- function(t, state, parameters) {
         FOI <- rep(0, na)
         FOIv <- 0
         
-
         I_Vtot <- sum(I_V)
-
-        EIRd <- av0 * ((I_Vtot*mv0)/N_V) / omega
+        EIRd <- av0 * ((I_Vtot)/total_M) / omega
         EIR <- EIRd * foi_age * rel_foi
 
         # calculate the weighted average of onward infectivity
@@ -66,10 +69,13 @@ human_Imperial_ODE <- function(t, state, parameters) {
 
         I_V <- I_V[sort(names(I_V))]
         b0 <- b0[sort(names(b0))]
-        I_Vprop <- I_V/I_Vtot
+        b <- rep(0, na)
 
-        # dot product gives the weighted average - cast to vector to suppress R warning
-        b <- as.vector(b0 %*% I_Vprop) * ((1 - b1) / (1 + (IB / IB0) ^ kB) + b1)
+        if(I_Vtot != 0) {
+            I_Vprop <- I_V/I_Vtot
+            # dot product gives the weighted average - cast to vector to suppress R warning
+            b <- as.vector(b0 %*% I_Vprop) * ((1 - b1) / (1 + (IB / IB0) ^ kB) + b1)
+        }
 
         for (i in 1:(na)) {
             FOI[i] <- EIR[i] * (ifelse(IB[i] == 0, b0, b[i]))
@@ -77,12 +83,19 @@ human_Imperial_ODE <- function(t, state, parameters) {
 
         rate_ibaq <- EIR / (EIR * uB + 1)
         rate_clinaq <- FOI / (FOI * uCA + 1)
+        rate_detaq <- FOI / (FOI * uD + 1)
+        rate_sevaq <- FOI / (FOI * uVA + 1)
 
         dICA <- rep(0, na)
+        dIVA <- rep(0, na)
 
         IC <- ICM + ICA
         phi <- phi0 * ((1 - phi1) / (1 + (IC / IC0)^kC) + phi1)
         clin_inc <- phi * FOI * Y
+        fv <- 1 - (1-fvS)/(1+(age_days/av)^gammaV)
+        immunity_multiplier <- ((IVA+IVM)/iv0)^kv
+        severe_disease <- theta0*(theta1 + ((1-theta1)/(1+fv*immunity_multiplier)))*infected
+        mort <- pctMort*severe_disease
 
         for (i in 1:(na)) {
             dS[i] <-
@@ -112,14 +125,11 @@ human_Imperial_ODE <- function(t, state, parameters) {
             dIB[i] <-
                 rate_ibaq[i] - IB[i] / db + (ifelse(i == 1, -IB[1] / x_I[1], -(IB[i] - IB[i -
                     1]) / x_I[i]))
-        }
-        rate_detaq <- FOI / (FOI * uD + 1)
-
-        for (i in 1:(na)) {
             dID[i] <-
                 rate_detaq[i] - ID[i] / dd + (ifelse(i == 1, -ID[1] / x_I[1], -(ID[i] - ID[i - 1]) / x_I[i]))
-        }
 
+            dIVA[i] <- rate_sevaq[i] - IVA[i] / dv + (ifelse(i == 1, -IVA[1] / x_I[1], -(IVA[i] - IVA[i - 1]) / x_I[i]))
+        }
 
         list(c(
             dS,
@@ -130,8 +140,10 @@ human_Imperial_ODE <- function(t, state, parameters) {
             dP,
             dICA,
             dIB,
-            dID
+            dID,
+            dIVA
         ),
-        clin_inc=clin_inc)
+        clin_inc=clin_inc,
+        mort=mort)
     })
 }
